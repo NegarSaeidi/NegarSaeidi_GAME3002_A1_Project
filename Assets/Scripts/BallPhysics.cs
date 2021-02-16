@@ -37,6 +37,11 @@ public class BallPhysics : MonoBehaviour
     [SerializeField]
     public InputField Xpos, Ypos, Zpos;
     // Start is called before the first frame update
+    /*
+     * 
+     * In this function I set the 3 input fields that we have to zero
+     */
+
     void Start()
     {
        // audioData = GetComponent<AudioSource>();
@@ -52,9 +57,16 @@ public class BallPhysics : MonoBehaviour
     }
 
     // Update is called once per frame
+    /*
+     * By uncommenting the movePlayer function, you can move the player but since it is penalty kick game,
+     * I thought it is better to comment this.
+     * 
+     * next i Check the target position, if it is equal to (0,0,0), it means that the player has not set the target
+     * or the user has restarted the game. So I set the velocity of ball to zero cause I don't want it to move.
+     * */
     void Update()
     {
-        movePlayer();
+       // movePlayer();
         updateTargetPos();
 
             if (m_TargetDisplay != null && m_bIsGrounded)
@@ -67,7 +79,7 @@ public class BallPhysics : MonoBehaviour
                     m_rb.velocity = m_vInitialVel;
                     vDebugHeading = Vector3.zero;
                 }
-
+                //If the ball is not in the goal position,  I still calculate the heading and target display position
                 else
                 {
                     if (!goal)
@@ -78,13 +90,14 @@ public class BallPhysics : MonoBehaviour
                     }
                 }
             }
-
+            //If the user presses shoot, he can kick the ball
             if (m_bDebugKickBall && m_bIsGrounded)
             {
                 m_bDebugKickBall = false;
             addScore = false;
             OnKickBall();
             }
+            //If the user restart the game, every variable restarts as well except the score
             if (m_bRestart)
             {
                 m_vTargetPos = Vector3.zero;
@@ -99,7 +112,10 @@ public class BallPhysics : MonoBehaviour
             m_bRestart = false;
 
             }
+            //Check to see if the ball is whithin the goal post
             checkBound();
+        //If the ball is in the goal, I multiply the velocity in the y axis casue I want the ball to fall there.
+        //I also add to the score
         if (goal)
         {
             if(!addScore)
@@ -112,6 +128,7 @@ public class BallPhysics : MonoBehaviour
             goal = false;
         }
     }
+    //In this function, I update the target position by the inputs I received from the player
   private void updateTargetPos()
     {
         m_vTargetPos.x = float.Parse(Xpos.GetComponent<UnityEngine.UI.InputField>().text);
@@ -119,6 +136,7 @@ public class BallPhysics : MonoBehaviour
         m_vTargetPos.z = float.Parse(Zpos.GetComponent<UnityEngine.UI.InputField>().text);
    
     }
+    //In this function, I create the red target sign
     private void CreateTargetDisplay()
     {
         m_TargetDisplay = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -129,6 +147,7 @@ public class BallPhysics : MonoBehaviour
         m_TargetDisplay.GetComponent<Renderer>().material.color = Color.red;
         m_TargetDisplay.GetComponent<Collider>().enabled = false;
     }
+    //Checkbound function checks to see if the ball is in the goal
     private void checkBound()
     {
         if((Mathf.Abs(leftPost.transform.position.x-transform.position.x)<19)&&
@@ -150,6 +169,7 @@ public class BallPhysics : MonoBehaviour
             }
         }
     }
+    //To move the player with WASD
     private void movePlayer()
     {
         if (Input.GetKey(KeyCode.A))
@@ -162,6 +182,7 @@ public class BallPhysics : MonoBehaviour
         if (Input.GetKey(KeyCode.S))
             transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - 0.05f);
     }
+    //To kick the ball
     public void OnKickBall()
     {
         // H = Vi^2 * sin^2(theta) / 2g
@@ -179,7 +200,7 @@ public class BallPhysics : MonoBehaviour
         float fTheta = Mathf.Atan((4 * fMaxHeight) / (fRange));
 
           float fInitVelMag = Mathf.Sqrt((2 * Mathf.Abs(Physics.gravity.y) * fMaxHeight)) / Mathf.Sin(fTheta);
-        //float fInitVelMag = Mathf.Sqrt((fRange * Physics.gravity.y) / 2 * Mathf.Cos(fTheta) * Mathf.Sin(fTheta));
+       //Then I calculate the direction in which the ball should move
      
         Vector3 direction = Vector3.Normalize(m_TargetDisplay.transform.position - transform.position);
         m_vInitialVel.x = direction.x * fInitVelMag;
